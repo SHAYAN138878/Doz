@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <title>بازی دوز نئون دو نفره</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @keyframes neonGlow {
+      0%, 100% {
+        text-shadow:
+          0 0 5px #0ff,
+          0 0 10px #0ff,
+          0 0 20px #0ff,
+          0 0 40px #0ff;
+      }
+      50% {
+        text-shadow:
+          0 0 15px #0ff,
+          0 0 30px #0ff,
+          0 0 50px #0ff,
+          0 0 70px #0ff;
+      }
+    }
+    body {
+      margin: 0;
+      font-family: Tahoma, sans-serif;
+      background: linear-gradient(135deg, #020024, #090979, #00d4ff);
+      color: #0ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      min-height: 100vh;
+    }
+    h1 {
+      margin: 0 0 15px;
+      font-size: 2.5rem;
+      animation: neonGlow 2s ease-in-out infinite alternate;
+      user-select: none;
+    }
+    .inputs {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    input, select, button {
+      padding: 8px 15px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      outline: none;
+      transition: box-shadow 0.3s;
+    }
+    input {
+      min-width: 140px;
+      background: rgba(0, 255, 255, 0.15);
+      color: #0ff;
+    }
+    input::placeholder {
+      color: #88ffff;
+    }
+    select {
+      background: rgba(0, 255, 255, 0.15);
+      color: #0ff;
+      cursor: pointer;
+    }
+    button {
+      background: #0ff;
+      color: #002222;
+      cursor: pointer;
+      box-shadow: 0 0 10px #0ff;
+      font-weight: 700;
+    }
+    button:hover {
+      box-shadow: 0 0 20px #0ff;
+      transform: scale(1.05);
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 12px;
+      user-select: none;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: rgba(0, 255, 255, 0.1);
+      border-radius: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: #0ff;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0ff;
+      transition: all 0.3s ease;
+    }
+    .cell:hover:not(.disabled):not(.winner) {
+      background: rgba(0, 255, 255, 0.3);
+      box-shadow: 0 0 30px #0ff;
+      transform: scale(1.1);
+    }
+    .x {
+      color: #0ff;
+      text-shadow:
+        0 0 7px #0ff,
+        0 0 15px #0ff,
+        0 0 25px #0ff;
+      animation: neonGlow 2s ease-in-out infinite alternate;
+    }
+    .o {
+      color: #ff0;
+      text-shadow:
+        0 0 7px #ff0,
+        0 0 15px #ff0,
+        0 0 25px #ff0;
+      animation: neonGlow 2s ease-in-out infinite alternate;
+    }
+    .winner {
+      background: #00ff0077 !important;
+      box-shadow: 0 0 25px #0f0 !important;
+      cursor: default;
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 1.3rem;
+      min-height: 25px;
+      text-align: center;
+      user-select: none;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 5px #0ff;
+    }
+    #scoreboard {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      min-height: 30px;
+      text-align: center;
+      user-select: none;
+    }
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #guide {
+      margin-top: 15px;
+      background: rgba(0, 255, 255, 0.15);
+      padding: 10px 15px;
+      border-radius: 15px;
+      color: #0ff;
+      max-width: 350px;
+      line-height: 1.3;
+      display: none;
+      user-select: none;
+      box-shadow: 0 0 15px #0ff;
+    }
+
+    /* Themes */
+    body.theme-glass {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #a6c0fe;
+    }
+    body.theme-glass .cell {
+      background: rgba(255, 255, 255, 0.15);
+      color: #a6c0fe;
+      box-shadow: 0 0 10px #a6c0fe;
+    }
+    body.theme-glass .cell:hover:not(.disabled):not(.winner) {
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 25px #a6c0fe;
+    }
+    body.theme-glass .x {
+      color: #82aaff;
+      text-shadow: 0 0 10px #82aaff;
+    }
+    body.theme-glass .o {
+      color: #ffcb6b;
+      text-shadow: 0 0 10px #ffcb6b;
+    }
+    body.theme-glass .winner {
+      background: #82aaff66 !important;
+      box-shadow: 0 0 25px #82aaff !important;
+    }
+    body.theme-classic {
+      background: #f0f0f0;
+      color: #222;
+    }
+    body.theme-classic .cell {
+      background: #fff;
+      color: #222;
+      box-shadow: 0 0 5px #999;
+    }
+    body.theme-classic .cell:hover:not(.disabled):not(.winner) {
+      background: #ddd;
+      box-shadow: 0 0 12px #999;
+    }
+    body.theme-classic .x {
+      color: #d32f2f;
+      text-shadow: none;
+      animation: none;
+    }
+    body.theme-classic .o {
+      color: #1976d2;
+      text-shadow: none;
+      animation: none;
+    }
+    body.theme-classic .winner {
+      background: #d32f2f44 !important;
+      box-shadow: 0 0 15px #d32f2f !important;
+    }
+    body.theme-fun {
+      background: #330033;
+      color: #ff66cc;
+    }
+    body.theme-fun .cell {
+      background: #551155;
+      color: #ff66cc;
+      box-shadow: 0 0 15px #ff66cc;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    body.theme-fun .cell:hover:not(.disabled):not(.winner) {
+      background: #771177;
+      box-shadow: 0 0 30px #ff66cc;
+    }
+    body.theme-fun .x {
+      color: #ff99ff;
+      animation: neonGlow 2s ease-in-out infinite alternate;
+    }
+    body.theme-fun .o {
+      color: #ffccff;
+      animation: neonGlow 2s ease-in-out infinite alternate;
+    }
+    body.theme-fun .winner {
+      background: #ff99ff88 !important;
+      box-shadow: 0 0 25px #ff99ff !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 400px) {
+      #board {
+        grid-template-columns: repeat(3, 80px);
+        grid-gap: 10px;
+      }
+      .cell {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="theme-neon">
+  <h1>بازی دوز نئون دو نفره</h1>
+
+  <div class="inputs">
+    <input type="text" id="playerX" placeholder="نام بازیکن X" />
+    <input type="text" id="playerO" placeholder="نام بازیکن O" />
+    <select id="themeSelector" title="انتخاب تم بازی">
+      <option value="neon" selected>نئون</option>
+      <option value="glass">شیشه‌ای</option>
+      <option value="classic">کلاسیک</option>
+      <option value="fun">فانتزی</option>
+    </select>
+    <button id="startBtn">شروع بازی</button>
+  </div>
+
+  <div id="scoreboard">امتیاز: X = 0 | O = 0</div>
+  <div id="status">لطفاً شروع کنید</div>
+  <div id="board"></div>
+
+  <div id="controls">
+    <button id="resetBtn">شروع دوباره</button>
+    <button id="resetScoresBtn">ریست امتیاز</button>
+    <button id="toggleGuideBtn">نمایش راهنما</button>
+  </div>
+
+  <div id="guide">
+    <strong>راهنما:</strong><br />
+    بازی دوز (XO) دو نفره است.<br />
+    هر بازیکن به نوبت یک خانه را انتخاب می‌کند.<br />
+    هدف: سه علامت مشابه در یک ردیف، ستون یا قطر.<br />
+    از بازی لذت ببرید!
+  </div>
+
+  <script>
+    (() => {
+      const boardDiv = document.getElementById('board');
+      const statusDiv = document.getElementById('status');
+      const scoreboardDiv = document.getElementById('scoreboard');
+      const guideDiv = document.getElementById('guide');
+      const toggleGuideBtn = document.getElementById('toggleGuideBtn');
+      const themeSelector = document.getElementById('themeSelector');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const resetScoresBtn = document.getElementById('resetScoresBtn');
+      const playerXInput = document.getElementById('playerX');
+      const playerOInput = document.getElementById('playerO');
+
+      let board = Array(9).fill(null);
+      let currentPlayer = 'X';
+      let scores = { X: 0, O: 0 };
+      let playerNames = { X: 'بازیکن X', O: 'بازیکن O' };
+      let gameOver = false;
+
+      function drawBoard() {
+        boardDiv.innerHTML = '';
+        board.forEach((cell, i) => {
+          const cellDiv = document.createElement('div');
+          cellDiv.classList.add('cell');
+          if (cell) {
+            cellDiv.textContent = cell;
+            cellDiv.classList.add(cell.toLowerCase());
+            cellDiv.classList.add('disabled');
+          }
+          cellDiv.addEventListener('click', () => handleCellClick(i));
+          boardDiv.appendChild(cellDiv);
+        });
+      }
+
+      function handleCellClick(i) {
+        if (gameOver || board[i]) return;
+        board[i] = currentPlayer;
+        drawBoard();
+
+        const winnerLine = checkWinner();
+        if (winnerLine) {
+          highlightWinner(winnerLine);
+          statusDiv.textContent = `برنده: ${playerNames[currentPlayer]}!`;
+          scores[currentPlayer]++;
+          updateScoreboard();
+          gameOver = true;
+          return;
+        }
+
+        if (board.every(cell => cell !== null)) {
+          statusDiv.textContent = 'مساوی!';
+          gameOver = true;
+          return;
+        }
+
+        // تغییر بازیکن
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusDiv.textContent = `نوبت ${playerNames[currentPlayer]}`;
+      }
+
+      function checkWinner() {
+        const lines = [
+          [0,1,2],[3,4,5],[6,7,8],
+          [0,3,6],[1,4,7],[2,5,8],
+          [0,4,8],[2,4,6]
+        ];
+        for (const line of lines) {
+          const [a,b,c] = line;
+          if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return line;
+          }
+        }
+        return null;
+      }
+
+      function highlightWinner(line) {
+        line.forEach(i => {
+          const cell = boardDiv.children[i];
+          cell.classList.add('winner');
+        });
+      }
+
+      function updateScoreboard() {
+        scoreboardDiv.textContent = `امتیاز: ${playerNames.X} = ${scores.X} | ${playerNames.O} = ${scores.O}`;
+      }
+
+      function resetGame() {
+        board.fill(null);
+        gameOver = false;
+        currentPlayer = 'X';
+        statusDiv.textContent = `نوبت ${playerNames[currentPlayer]}`;
+        drawBoard();
+      }
+
+      function resetScores() {
+        scores = { X: 0, O: 0 };
+        updateScoreboard();
+        resetGame();
+      }
+
+      function toggleGuide() {
+        if (guideDiv.style.display === 'block') {
+          guideDiv.style.display = 'none';
+          toggleGuideBtn.textContent = 'نمایش راهنما';
+        } else {
+          guideDiv.style.display = 'block';
+          toggleGuideBtn.textContent = 'مخفی کردن راهنما';
+        }
+      }
+
+      function changeTheme() {
+        const theme = themeSelector.value;
+        document.body.className = ''; // پاک کردن کلاس‌ها
+        if (theme === 'neon') document.body.classList.add('theme-neon');
+        else if (theme === 'glass') document.body.classList.add('theme-glass');
+        else if (theme === 'classic') document.body.classList.add('theme-classic');
+        else if (theme === 'fun') document.body.classList.add('theme-fun');
+      }
+
+      function startGame() {
+        const px = playerXInput.value.trim();
+        const po = playerOInput.value.trim();
+        playerNames.X = px.length > 0 ? px : 'بازیکن X';
+        playerNames.O = po.length > 0 ? po : 'بازیکن O';
+        updateScoreboard();
+        resetGame();
+        changeTheme();
+        guideDiv.style.display = 'none';
+        toggleGuideBtn.textContent = 'نمایش راهنما';
+      }
+
+      // رویدادها
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      resetScoresBtn.addEventListener('click', resetScores);
+      toggleGuideBtn.addEventListener('click', toggleGuide);
+      themeSelector.addEventListener('change', changeTheme);
+
+      // شروع اولیه
+      startGame();
+    })();
+  </script>
+</body>
+</html>
